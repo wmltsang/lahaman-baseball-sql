@@ -124,6 +124,126 @@ ORDER BY decade ASC
 --Both homeruns and strikeouts increase through the decades. 
 
 --Question 6
+--Find the player who had the most success stealing bases in 2016 
+--success is measured as the percentage of stolen base attempts which are successful (attempts>= 20)
+--[Batting] (playerid),(SB), (CS), sum(SB, CS) as attempts, (yearid) = 2016
+--join [people] (playerid), (namefirst), (namelast)
+--ANS: Chris Owings has the highest sucess in stealing bases in 2016 with 91.3 sucessful rate with 23 attempts. 
+SELECT 
+playerid, 
+stolen_base_attempts, 
+namefirst,
+namelast, 
+success
+FROM
+(
+SELECT 
+DISTINCT b.playerid,
+CASE
+    WHEN 
+    (b.sb:: NUMERIC) + (b.cs ::NUMERIC) = 0 THEN 0 
+    ELSE
+	(b.sb:: NUMERIC) + (b.cs ::NUMERIC) 
+	END AS stolen_base_attempts,
+p.namefirst,
+p.namelast,
+CASE 
+	WHEN 
+    (b.sb:: NUMERIC) + (b.cs ::NUMERIC) = 0 THEN 0 
+    ELSE
+	ROUND(((b.sb:: NUMERIC)*100/((b.sb:: NUMERIC) +(b.cs ::NUMERIC))), 2)
+	END AS success 
+FROM batting b
+JOIN people p
+ON b.playerid = p.playerid
+WHERE b.yearid = 2016
+GROUP BY b. playerid, b.sb, b.cs, p.namefirst, p.namelast
+ORDER BY success DESC
+) subquery
+WHERE stolen_base_attempts >= 20;
 
+--Question 7: 
+/*From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the
+smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually
+small number of wins for a world series champion – determine why this is the case. Then redo your query,
+excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won
+the world series? What percentage of the time?*/
+
+--Find largest number of wins who is N to world series
+--[teams] (teamid),(name), (w) DESC, (wswin) = 'N', (yearid)
+--ANS: The largest number of win who is Not a world series winners are Seattle Mariners (SEA) in 2001
+--and Chicago Cubs (CHN) with 116 wins in 1906.
+SELECT teamid,name, w, yearid
+FROM teams
+WHERE wswin = 'N'
+ORDER BY w DESC;
+
+SELECT *
+FROM teams
+WHERE teamid = 'SEA' and yearid = 2001
+--Find smallest number of wins for a team who is Y to world series, why?
+--[teams] (teamid),(name), (w) ASC, (wswin) = 'Y', (yearid)
+--exclude problem year.
+--Los Angeles Dodgers has 63 wins in 1981 with the smallest wins. 
+SELECT teamid,name, w, yearid
+FROM teams
+WHERE wswin = 'Y'
+ORDER BY w ASC;
+
+--
+SELECT *
+FROM teams
+WHERE teamid = 'LAN' and yearid = 1981 --smallest number of wins world series champion
+UNION ALL
+SELECT *
+FROM teams
+WHERE teamid ='SEA' and yearid = 2001 --largest number of wins not a world series champion
+
+--In 1981, the games played and game played at home in total is nearly half less with 110 games vs 162 in 2001. 
+
+-- --inning, strikeout (SOA), subtract hit (H), ER, R,BB
+
+--Question 7 redo query
+--exclude problem year (yearid) = 1981
+--How often from 1970 – 2016 was it the case that a team with the most wins also won
+--the world series? What percentage of the time?
+--[teams] max(w), wswin = 'Y', group by (yearid)
+--how often happen max(win)
+
+WITH max_wins_per_year AS (
+     SELECT yearid, MAX(w) as max_wins
+       FROM teams
+      GROUP BY yearid
+)
+SELECT
+       SUM(match) as match_count,
+       COUNT(*) as total_years,
+       ROUND((SUM(match) / COUNT(*)::numeric)*100, 3) as pct_match
+FROM (
+     SELECT CASE WHEN max_wins_per_year.max_wins = teams.w THEN 1 ELSE 0 END as match
+       FROM teams
+            INNER JOIN max_wins_per_year USING(yearid)
+      WHERE wswin = 'Y'
+) as sub;
+
+--ANS: match_count is 50, total_years: 117 and percentage_match is 42.74. 
+
+--second queries for question 7 with better accuracy.
+WITH winners as	(	SELECT teamid as champ, 
+				           yearid, w as champ_w
+	  				FROM teams
+	  				WHERE 	(wswin = 'Y')
+				 			AND (yearid BETWEEN 1970 AND 2016) ),
+max_wins as (	SELECT yearid, 
+			           max(w) as maxw
+	  			FROM teams
+	  			WHERE yearid BETWEEN 1970 AND 2016
+				GROUP BY yearid)
+SELECT 	COUNT(*) AS all_years,
+		COUNT(CASE WHEN champ_w = maxw THEN 'Yes' end) as max_wins_by_champ,
+		to_char((COUNT(CASE WHEN champ_w = maxw THEN 'Yes' end)/(COUNT(*))::real)*100,'99.99%') as Percent
+FROM 	winners LEFT JOIN max_wins
+		USING(yearid)
+		
 
 
