@@ -244,6 +244,79 @@ SELECT 	COUNT(*) AS all_years,
 		to_char((COUNT(CASE WHEN champ_w = maxw THEN 'Yes' end)/(COUNT(*))::real)*100,'99.99%') as Percent
 FROM 	winners LEFT JOIN max_wins
 		USING(yearid)
-		
+--Question 8
+/* Find the teams names and parks names had top 5 and lowest 5 average attendance per game in 2016 (total attendance/total game)
+[homegames] (park) id, (team) id, (attendance/games) avg_attendance
+join [teams] (teamid), (name), (park)
+filter parks >= 10 games played.*/
 
+WITH attendance AS(SELECT 
+h.park AS parkid, 
+h.team AS teamid, 
+ROUND((h.attendance :: NUMERIC/h.games :: NUMERIC),2) AS avg_attendance,
+t.name AS team,
+t.park 
+FROM homegames h
+INNER JOIN teams t
+ON h.team = t.teamid
+WHERE h.games >=10
+ORDER BY avg_attendance DESC),
+
+avg_attendance as (SELECT 
+DISTINCT avg_attendance
+FROM attendance
+ORDER BY avg_attendance DESC)
+
+SELECT team, park, 
+
+
+--Question 10
+/*Analyze all the colleges in the state of Tennessee. Which college has had the most success in the major leagues.
+Use whatever metric for success you like - number of players, number of games, salaries, world series wins, etc.*/
+
+/*[collegeplaying] (playerid), (schoolid) (yearid)
+join [schools] on (schoolid), (schoolname), (schoolcity), (schoolstate) = 'Tennessee'*/
+
+--My purpose is to group TN college by salary and number of major league players.
+WITH tn_college AS (SELECT DISTINCT 
+c.playerid, 
+c.schoolid, 
+c.yearid,
+s.schoolname,
+s.schoolcity,
+s.schoolstate
+FROM collegeplaying c
+INNER JOIN schools s
+ON c.schoolid = s.schoolid
+WHERE s.schoolstate = 'TN'),
+tn_salaries AS (
+SELECT 
+s.playerid, 
+s.yearid, 
+s.teamid, 
+s.lgid as league, 
+SUM(s.salary) AS college_total_salary,
+t.schoolid, 
+t.schoolname as tn_college,
+t.schoolcity,
+t.schoolstate
+FROM salaries s
+INNER JOIN tn_college t
+ON s.playerid = t.playerid
+WHERE s.yearid BETWEEN 1970 AND 2016
+GROUP BY s.yearid,t.schoolname, s.salary,s.playerid, s.teamid, league, t.schoolid,t.schoolcity,t.schoolstate
+ORDER BY s.salary DESC, s.yearid DESC
+),
+
+salary AS (SELECT 
+SUM(college_total_salary) AS college_total_salary,
+tn_college
+FROM tn_salaries
+GROUP BY tn_college)
+
+SELECT *
+FROM salary
+ORDER BY college_total_salary DESC --between year 1970 and 2016
+
+/*join tn_college cte to [salaries] * on (playerid), (yearid), (teamid), (lgid) as league, (salary)*/
 
