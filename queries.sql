@@ -267,8 +267,69 @@ DISTINCT avg_attendance
 FROM attendance
 ORDER BY avg_attendance DESC)
 
-SELECT team, park, 
+--Question 9
+--Which managers have won the TSN Manager of the Year award in both the National League (NL) and the
+--American League (AL)? Give their full name and the teams that they were managing when they won the award.
+[awardsmanagers] (playerid), (awardid) = 'TSN Manager of the Year', 
+WITH manager AS (SELECT playerid, awardid, yearid, lgid
+FROM awardsmanagers
+WHERE lgid IN ('NL','AL') and awardid = 'TSN Manager of the Year'),
 
+cnt AS (Select playerid, awardid, yearid, lgid from
+(
+select playerid, awardid, yearid, lgid, count(1)over(partition by playerid) as Cnt
+from manager
+)a
+Where Cnt > 1)
+
+SELECT * 
+FROM cnt
+ORDER BY playerid ASC
+
+--playerid = 'johnsda02', yearid = 1997, lgid=AL, 
+					    --yearid = 2012	 lgid=NL					
+--playerid ='leylaji99', yearid =  2006  lgid =AL
+					    --yearid = 1992  lgid=NL
+--Find names of the managers getting both AL and NL awards
+--'johnsda02' is Davey Johnson, 'leylaji99' is Jim Leyland
+[people] (playerid) (namefirst) (namelast)
+SELECT playerid, namefirst, namelast
+FROM people
+WHERE playerid = 'leylaji99' OR playerid = 'johnsda02'
+
+--find teamid 
+--Answer: Davey Johnson, 1997, AL, BAL
+                       --2012, NL, WAS
+	--    Jim Leyland, 1992, NL, PIT
+	--                  2006, AL, DET
+--[managershalf] (yearid), (teamid), (playerid), (lgid)
+--join [teams] (yearid), (teamid), (name)
+--playerid = 'johnsda02', yearid = 1997, lgid=AL, 
+					    --yearid = 2012	 lgid=NL					
+--playerid ='leylaji99', yearid =  2006  lgid =AL
+					    --yearid = 1992  lgid=NL
+SELECT m.yearid, m.teamid, m.playerid, m.lgid, t.name
+FROM managers m
+INNER JOIN teams t
+ON  m.yearid = t.yearid
+WHERE 
+m.playerid = 'johnsda02' AND m.yearid = 2012 OR
+m.playerid = 'johnsda02' AND m.yearid = 1997 OR
+m.playerid = 'leylaji99' AND m.yearid = 2006 OR
+m.playerid = 'leylaji99' AND m.yearid = 1992 
+
+--find teamname 
+--Answer: Davey Johnson, 1997, AL, BAL, Baltimore Orioles
+                       --2012, NL, WAS, Washington Senators
+	--    Jim Leyland, 1992, NL, PIT, Pittsburg Alleghenys
+	--                  2006, AL, DET, Detroit Tigers
+SELECT name
+FROM teams
+WHERE teamid = 'WAS' OR teamid = 'BAL'
+
+SELECT name
+FROM teams
+WHERE teamid = 'PIT' OR teamid = 'DET'
 
 --Question 10
 /*Analyze all the colleges in the state of Tennessee. Which college has had the most success in the major leagues.
@@ -306,9 +367,9 @@ ON s.playerid = t.playerid
 WHERE s.yearid BETWEEN 1970 AND 2016
 GROUP BY s.yearid,t.schoolname, s.salary,s.playerid, s.teamid, league, t.schoolid,t.schoolcity,t.schoolstate
 ORDER BY s.salary DESC, s.yearid DESC
-),
+)
 
-salary AS (SELECT 
+/*salary AS (SELECT 
 SUM(college_total_salary) AS college_total_salary,
 tn_college
 FROM tn_salaries
@@ -316,7 +377,12 @@ GROUP BY tn_college)
 
 SELECT *
 FROM salary
-ORDER BY college_total_salary DESC --between year 1970 and 2016
+ORDER BY college_total_salary DESC --between year 1970 and 2016*/
+
+SELECT count(*) AS player_numbers, tn_college
+FROM tn_salaries
+GROUP BY tn_college
+ORDER BY player_numbers DESC --between year 1970 and 2016
 
 /*join tn_college cte to [salaries] * on (playerid), (yearid), (teamid), (lgid) as league, (salary)*/
 
