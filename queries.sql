@@ -260,12 +260,16 @@ FROM homegames h
 INNER JOIN teams t
 ON h.team = t.teamid
 WHERE h.games >=10
-ORDER BY avg_attendance DESC),
+ORDER BY avg_attendance),
 
 avg_attendance as (SELECT 
 DISTINCT avg_attendance
 FROM attendance
 ORDER BY avg_attendance DESC)
+
+SELECT DISTINCT avg_attendance, --distinct like to be in the first dimension (column)
+      park      
+FROM attendance
 
 --Question 9
 --Which managers have won the TSN Manager of the Year award in both the National League (NL) and the
