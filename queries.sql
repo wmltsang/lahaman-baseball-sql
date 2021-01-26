@@ -1,6 +1,9 @@
 --Question 1
 --This database contains pitching, hitting, and fielding statistics for
 --Major League Baseball from 1871 through 2016
+SELECT min(yearid) as min_year, 
+max(yearid) as max_year
+FROM teams
 
 --Question 2
 --Find the name and height of the shortest player in the database.
@@ -11,7 +14,7 @@ SELECT *
 FROM people as p
 FULL OUTER JOIN fielding f
 ON p.playerid = f.playerid
-where p.height = 43
+where p.height = 43    --note: use min() to find out the minimum height first from people table
 
 --get team ID of Eddie Gaedel
 SELECT * 
