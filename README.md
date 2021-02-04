@@ -7,7 +7,17 @@
 ![image](https://www.gannett-cdn.com/presto/2020/06/14/USAT/8e424956-0b2a-49ef-902e-aab9996ba6bf-baseball-field.jpg?auto=webp&crop=618,348,x722,y472&format=pjpg&width=1200)
 
 
-**Data Questions**
+**Major Data Questions**
+
+(Applied Advanced SQL queries 
+
+Examples: 
+
+-Finding data queries and applying aggragate functions: `SELECT`, `AS`, `DISTNCT`, `WHERE`,`ORDER BY`, `ILKIE`, `GROUP BY`, aggregate functions such as `COUNT`, `SUM`, `MIN`, `MAX`, `AVG`, `HAVING`; `CASE WHEN`, `ROUND`, `::` to change data type
+
+-Join queries: `INNER JOIN`, `LEFT JOIN`
+
+-Temp Table/CTEs)
 
 1. What range of __years__ does the provided database cover? 
 
@@ -27,7 +37,7 @@
 
 1.  From 1970 – 2016, what is the __largest number of wins for a team that did not win the world series__? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
 
-## __Open Analysis__ ##
+### __Other analysis__ ###
 
 ### __Topic__ ###
 
